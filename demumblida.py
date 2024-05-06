@@ -1,8 +1,26 @@
 import idaapi
 import idc
+import subprocess
+import os
+import ida_diskio
+import shutil
 
 p_initialized = False
 VERSION = "1.0.0"
+RES_EXE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "demumblida_util", 'demumble.exe')
+TARGET_EXE = os.path.join(ida_diskio.get_user_idadir(), "plugins", "demumblida_util", 'demumble.exe')
+
+def run_exe(s: str):
+    return subprocess.run([TARGET_EXE, s], capture_output=True, text=True, shell=True).stdout.replace("\n", "")
+
+def trans(s: str):
+    # user_dir = ida_diskio.get_user_idadir()
+    # ida_diskio.getsysfile()
+    result = run_exe(s)
+    if result == s:
+        print(f"<<< {s[:-2]}")
+        result = run_exe(s[:-2])
+    return result
 
 class Demumblida_Plugin_t(idaapi.plugin_t):
     flags = idaapi.PLUGIN_KEEP
@@ -19,6 +37,11 @@ class Demumblida_Plugin_t(idaapi.plugin_t):
             print("=" * 80)
             print("Demumblida v{0} by oldkingOK, 2024".format(VERSION))
             print("=" * 80)
+            # 复制可执行文件到用户目录
+            if not os.path.exists(RES_EXE):
+                raise Exception("demumble.exe not found")
+            os.makedirs(os.path.dirname(TARGET_EXE), exist_ok=True)
+            shutil.copy(RES_EXE, TARGET_EXE)
 
         return idaapi.PLUGIN_KEEP
 
@@ -36,7 +59,9 @@ class Demumblida_Plugin_t(idaapi.plugin_t):
         else:
             right_loc = len(s)
         right = s[loc:right_loc]
-        print(left + right)
+        s = left + right
+        print(f"<<< {s}")
+        print(f">>> {trans(s)}")
 
     def term(self):
         pass
