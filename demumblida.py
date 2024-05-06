@@ -67,10 +67,12 @@ class Demumblida_Plugin_t(idaapi.plugin_t):
         # 设置函数注释
         original = ida_bytes.get_cmt(idc.here(), 1)
         if original is None:
-            ida_bytes.set_cmt(idc.here(), tran, 1)
+            original = "\n"
         else:
-            if tran in original: return
-            ida_bytes.set_cmt(idc.here(), original + "\n" + tran, 1)
+            original += "\n"
+    
+        if tran in original: return
+        ida_bytes.set_cmt(idc.here(), original + tran, 1)
 
     def term(self):
         pass
