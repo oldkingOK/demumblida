@@ -1,4 +1,5 @@
 import idaapi
+import idc
 
 p_initialized = False
 VERSION = "1.0.0"
@@ -22,7 +23,20 @@ class Demumblida_Plugin_t(idaapi.plugin_t):
         return idaapi.PLUGIN_KEEP
 
     def run(self, arg):
-        print("Demumblida plugin is running...")
+        # print("Demumblida plugin is running...")
+        s = idc.generate_disasm_line(idc.here(),0)
+        loc = idaapi.get_cursor()[1] # 拿到坐标
+        # 提取光标左右两边的字符串——函数名
+        left_loc = s.rfind(" ", 0, loc)
+        left = s[left_loc+1:loc]
+        if (right_loc := s.find(";", loc)) != -1:
+            pass
+        elif (right_loc := s.find(" ", loc)) != -1:
+            pass
+        else:
+            right_loc = len(s)
+        right = s[loc:right_loc]
+        print(left + right)
 
     def term(self):
         pass
